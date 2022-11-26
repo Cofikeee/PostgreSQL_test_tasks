@@ -1,0 +1,42 @@
+DROP TABLE IF EXISTS account_balance;
+
+CREATE TABLE account_balance
+(
+    account_no          VARCHAR(20),
+    transaction_date    DATE,
+    debit_credit        VARCHAR(10),
+    transaction_amount  DECIMAL
+);
+
+INSERT INTO account_balance VALUES ('acc_1', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 100);
+INSERT INTO account_balance VALUES ('acc_1', to_date('2022-01-21', 'YYYY-MM-DD'), 'credit', 500);
+INSERT INTO account_balance VALUES ('acc_1', to_date('2022-01-22', 'YYYY-MM-DD'), 'credit', 300);
+INSERT INTO account_balance VALUES ('acc_1', to_date('2022-01-23', 'YYYY-MM-DD'), 'credit', 200);
+INSERT INTO account_balance VALUES ('acc_2', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 500);
+INSERT INTO account_balance VALUES ('acc_2', to_date('2022-01-21', 'YYYY-MM-DD'), 'credit', 1100);
+INSERT INTO account_balance VALUES ('acc_2', to_date('2022-01-22', 'YYYY-MM-DD'), 'debit', 1000);
+INSERT INTO account_balance VALUES ('acc_3', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 1000);
+INSERT INTO account_balance VALUES ('acc_4', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 1500);
+INSERT INTO account_balance VALUES ('acc_4', to_date('2022-01-21', 'YYYY-MM-DD'), 'debit', 500);
+INSERT INTO account_balance VALUES ('acc_5', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 900);
+
+SELECT * FROM account_balance;
+
+
+WITH cte AS 
+     (SELECT account_no, transaction_date, 
+             CASE WHEN debit_credit = 'debit' THEN transaction_amount * -1 ELSE transaction_amount END AS transaction_amount
+        FROM account_balance),
+        
+     final_data AS
+     (SELECT *,
+             SUM(transaction_amount) OVER(PARTITION BY account_no ORDER BY transaction_date) AS cumsum,
+             SUM(transaction_amount) OVER(PARTITION BY account_no ORDER BY transaction_date
+                                          RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS final_amount
+        FROM cte)
+        
+SELECT account_no, MIN(transaction_date)
+  FROM final_data
+ WHERE final_amount >= 1000
+       AND cumsum >= 1000
+ GROUP BY account_no;
