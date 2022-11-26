@@ -21,7 +21,7 @@ INSERT INTO account_balance VALUES ('acc_4', to_date('2022-01-21', 'YYYY-MM-DD')
 INSERT INTO account_balance VALUES ('acc_5', to_date('2022-01-20', 'YYYY-MM-DD'), 'credit', 900);
 
 SELECT * FROM account_balance;
-
+ 
 
 WITH cte AS 
      (SELECT account_no, transaction_date, 
